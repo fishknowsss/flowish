@@ -1,0 +1,54 @@
+:root {
+  --font-display: 'Syne', 'Avenir Next', 'Trebuchet MS', sans-serif;
+  --font-text: 'Manrope', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  --bg-app: #ece5d7;
+  --bg-shell: rgba(252, 249, 244, 0.72);
+  --bg-panel: rgba(249, 245, 238, 0.9);
+  --bg-panel-strong: rgba(255, 252, 247, 0.94);
+  --bg-glass: rgba(255, 255, 255, 0.52);
+  --bg-glass-strong: rgba(255, 255, 255, 0.7);
+  --border-soft: rgba(255, 255, 255, 0.7);
+  --border-strong: rgba(185, 170, 152, 0.28);
+  --shadow-lg: 0 22px 50px rgba(96, 73, 46, 0.12);
+  --shadow-md: 0 12px 26px rgba(96, 73, 46, 0.09);
+  --shadow-sm: 0 6px 12px rgba(96, 73, 46, 0.06);
+  --text-primary: #201a16;
+  --text-secondary: #6f6156;
+  --text-muted: #9f9186;
+  --accent-focus: #d26f3d;
+  --accent-backlog: #6383af;
+  --accent-ritual: #5e8b6c;
+  --accent-event: #b87154;
+  --accent-surface: #dbcab6;
+  --accent-glow: rgba(255, 255, 255, 0.72);
+  --danger: #b65e5a;
+  --radius-xl: 30px;
+  --radius-lg: 24px;
+  --radius-md: 18px;
+  --radius-sm: 14px;
+  --topbar-height: 104px;
+  --drawer-width: 380px;
+  --easing-fluid: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:root[data-theme='mist'] {
+  --bg-app: #dfe8ef;
+  --bg-shell: rgba(242, 248, 252, 0.74);
+  --bg-panel: rgba(241, 247, 251, 0.88);
+  --bg-panel-strong: rgba(249, 253, 255, 0.94);
+  --bg-glass: rgba(255, 255, 255, 0.48);
+  --bg-glass-strong: rgba(255, 255, 255, 0.64);
+  --border-soft: rgba(255, 255, 255, 0.72);
+  --border-strong: rgba(130, 157, 178, 0.24);
+  --shadow-lg: 0 22px 56px rgba(36, 72, 104, 0.14);
+  --shadow-md: 0 12px 24px rgba(36, 72, 104, 0.08);
+  --shadow-sm: 0 6px 12px rgba(36, 72, 104, 0.06);
+  --text-primary: #18212d;
+  --text-secondary: #607182;
+  --text-muted: #8ea0b1;
+  --accent-focus: #d57b4e;
+  --accent-backlog: #5a82a9;
+  --accent-ritual: #5e8e7f;
+  --accent-event: #cb7559;
+  --accent-surface: #c8d9e4;
+}
