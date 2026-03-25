@@ -19,7 +19,9 @@ createRoot(document.getElementById('root')!).render(
 )
 
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  const serviceWorkerUrl = `${import.meta.env.BASE_URL}sw.js?v=${__APP_VERSION__}`
+
   window.addEventListener('load', () => {
-    void navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`)
+    void navigator.serviceWorker.register(serviceWorkerUrl)
   })
 }
