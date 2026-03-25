@@ -1,7 +1,7 @@
 import { BUILTIN_QUOTES } from '../lib/quotes'
 
 export const APP_DATA_VERSION = 1
-export const APP_DATA_STORAGE_KEY = 'liquid_dashboard_pro_app'
+export const APP_DATA_STORAGE_KEY = 'flowish_app'
 
 export type TaskBucket = 'focus' | 'backlog' | 'date'
 export type ThemeMode = 'pearl' | 'mist' | 'obsidian'

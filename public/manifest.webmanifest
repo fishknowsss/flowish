@@ -1,6 +1,6 @@
 {
-  "name": "Liquid Dashboard Pro",
-  "short_name": "LiquidDash",
+  "name": "Flowish",
+  "short_name": "Flowish",
   "description": "A refined planning dashboard for focus tasks, rituals, date plans, and countdown events.",
   "start_url": ".",
   "display": "standalone",
@@ -17,7 +17,7 @@
       "src": "icons/app-icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any maskable"
     }
   ]
 }

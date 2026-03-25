@@ -17,6 +17,7 @@ import { getTodayKey } from './date'
 import { BUILTIN_QUOTES } from './quotes'
 
 type UnknownRecord = Record<string, unknown>
+const LEGACY_APP_DATA_STORAGE_KEY = 'liquid_dashboard_pro_app'
 
 function parseJson<T>(value: string | null): T | null {
   if (!value) return null
@@ -237,7 +238,9 @@ function rolloverCompletedFocusTasks(appData: AppData, todayKey: string): AppDat
 
 export function loadAppData(): AppData {
   const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
-  const currentData = parseJson<unknown>(localStorage.getItem(APP_DATA_STORAGE_KEY))
+  const currentData =
+    parseJson<unknown>(localStorage.getItem(APP_DATA_STORAGE_KEY)) ??
+    parseJson<unknown>(localStorage.getItem(LEGACY_APP_DATA_STORAGE_KEY))
   const fromStorage = currentData ? sanitizeAppData(currentData, reducedMotion) : null
   const fromLegacy = fromStorage ? null : fromLegacyLocalStorage(reducedMotion)
   const appData = fromStorage ?? fromLegacy ?? defaultAppData(getTodayKey(), reducedMotion)
@@ -255,7 +258,7 @@ export function exportAppData(appData: AppData) {
   const url = URL.createObjectURL(blob)
   const anchor = document.createElement('a')
   anchor.href = url
-  anchor.download = `liquid-dashboard-pro-${getTodayKey()}.json`
+  anchor.download = `flowish-${getTodayKey()}.json`
   anchor.click()
   URL.revokeObjectURL(url)
 }

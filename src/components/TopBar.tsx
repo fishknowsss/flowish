@@ -7,7 +7,6 @@ import {
   InstallIcon,
   SearchIcon,
   SettingsIcon,
-  SparkIcon,
   ThemeIcon,
   UploadIcon,
   VolumeIcon,
@@ -83,11 +82,9 @@ export function TopBar({
   return (
     <header className="topbar glass-panel">
       <div className="brand-block">
-        <div className="brand-glyph">
-          <SparkIcon width={18} height={18} />
-        </div>
+        <div className="brand-glyph" aria-hidden="true" />
         <div>
-          <h1>Liquid Dashboard Pro</h1>
+          <h1>Flowish</h1>
           <p className="topbar-date">{formatTopbarDate(todayKey)}</p>
         </div>
       </div>

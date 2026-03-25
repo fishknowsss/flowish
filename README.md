@@ -1,10 +1,10 @@
-# Liquid Dashboard Pro
+# Flowish
 
-Liquid Dashboard Pro is a static React web app for daily focus planning, backlog management, rituals, calendar signals, and countdown events.
+Flowish is a static React web app for daily focus planning, backlog management, rituals, calendar signals, and countdown events.
 
 ## Open locally
 
-The simplest local option is to double-click [open-local-site.cmd](C:/Users/Fishknowsss/Documents/Files/MyStuff/Liquid%20Dashboard%20Pro/open-local-site.cmd). It starts the local server and opens the site in your browser.
+The simplest local option is to double-click [open-local-site.cmd](./open-local-site.cmd). It starts the local server and opens the site in your browser.
 
 If you prefer terminal commands:
 

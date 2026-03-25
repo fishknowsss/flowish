@@ -1,5 +1,5 @@
 const version = new URL(self.location.href).searchParams.get('v') ?? 'dev'
-const cacheName = `liquid-dashboard-pro-${version}`
+const cacheName = `flowish-${version}`
 const appShellFiles = ['./', './manifest.webmanifest', './icons/app-icon-192.png', './icons/app-icon-512.png']
 
 const isSameOrigin = (request) => new URL(request.url).origin === self.location.origin
@@ -57,7 +57,9 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((key) => key.startsWith('liquid-dashboard-pro-') && key !== cacheName).map((key) => caches.delete(key))),
+      Promise.all(
+        keys.filter((key) => (key.startsWith('liquid-dashboard-pro-') || key.startsWith('flowish-')) && key !== cacheName).map((key) => caches.delete(key)),
+      ),
     ),
   )
   self.clients.claim()
