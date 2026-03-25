@@ -4,8 +4,9 @@ export const APP_DATA_VERSION = 1
 export const APP_DATA_STORAGE_KEY = 'liquid_dashboard_pro_app'
 
 export type TaskBucket = 'focus' | 'backlog' | 'date'
-export type ThemeMode = 'pearl' | 'mist'
+export type ThemeMode = 'pearl' | 'mist' | 'obsidian'
 export type QuoteMode = 'daily' | 'random'
+export type TaskPriority = 'p1' | 'p2' | 'p3' | null
 
 export interface Task {
   id: string
@@ -14,6 +15,7 @@ export interface Task {
   createdAt: string
   updatedAt: string
   bucket: TaskBucket
+  priority: TaskPriority
 }
 
 export interface Ritual {
@@ -54,6 +56,7 @@ export interface Preferences {
   quoteMode: QuoteMode
   calendarExpandedDefault: boolean
   lastActiveDate: string
+  pomodoroMinutes: number
 }
 
 export interface AppData {
@@ -72,7 +75,7 @@ export const createId = (prefix: string) =>
 
 const makeTimestamp = () => new Date().toISOString()
 
-export const createTask = (text: string, bucket: TaskBucket): Task => {
+export const createTask = (text: string, bucket: TaskBucket, priority: TaskPriority = null): Task => {
   const timestamp = makeTimestamp()
   return {
     id: createId(bucket),
@@ -81,6 +84,7 @@ export const createTask = (text: string, bucket: TaskBucket): Task => {
     createdAt: timestamp,
     updatedAt: timestamp,
     bucket,
+    priority,
   }
 }
 
@@ -111,8 +115,8 @@ export const createEvent = (
 export const defaultAppData = (todayKey: string, reducedMotion = false): AppData => ({
   version: APP_DATA_VERSION,
   focusTasks: [
-    createTask('打磨今天最重要的 3 件事', 'focus'),
-    createTask('把一个积压事项推进到可交付状态', 'focus'),
+    createTask('打磨今天最重要的 3 件事', 'focus', 'p1'),
+    createTask('把一个积压事项推进到可交付状态', 'focus', 'p2'),
   ],
   backlogTasks: [
     createTask('整理灵感、链接与临时想法', 'backlog'),
@@ -136,6 +140,7 @@ export const defaultAppData = (todayKey: string, reducedMotion = false): AppData
     quoteMode: 'daily',
     calendarExpandedDefault: false,
     lastActiveDate: todayKey,
+    pomodoroMinutes: 25,
   },
 })
 

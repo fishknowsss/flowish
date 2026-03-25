@@ -14,8 +14,7 @@ export function QuoteBar({ quoteText, quoteAuthor, onNext, onManage }: QuoteBarP
         <QuoteIcon width={15} height={15} />
       </div>
       <div className="quote-copy">
-        <p>{quoteText}</p>
-        <span>{quoteAuthor}</span>
+        <p>{quoteText} <span className="quote-author">— {quoteAuthor}</span></p>
       </div>
       <div className="quote-actions">
         <button className="icon-button compact" type="button" onClick={onNext} aria-label="切换短句">

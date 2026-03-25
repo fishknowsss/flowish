@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 
-import type { DatePlan, EventItem } from '../store/appData'
 import { formatLongDate } from '../lib/date'
 import {
   getBaseCalendarSignal,
@@ -8,13 +7,15 @@ import {
   getRitualCompletionCount,
   type CalendarSignal,
 } from '../lib/holidays'
-import { CheckIcon, CloseIcon, PlusIcon, TrashIcon } from './Icon'
+import type { DatePlan, EventItem } from '../store/appData'
+import { CheckIcon, CloseIcon, NoteIcon, PlusIcon, TrashIcon } from './Icon'
 
 interface DatePlannerDrawerProps {
   dateKey: string
   plan: DatePlan
   appData: import('../store/appData').AppData
   events: EventItem[]
+  isOpen: boolean
   onClose: () => void
   onAddTask: (text: string) => void
   onToggleTask: (taskId: string) => void
@@ -23,11 +24,16 @@ interface DatePlannerDrawerProps {
   onNoteChange: (note: string) => void
 }
 
+function getEventTypeLabel(type: EventItem['type']) {
+  return type === 'countdown' ? '倒数日' : '自定义'
+}
+
 export function DatePlannerDrawer({
   dateKey,
   plan,
   appData,
   events,
+  isOpen,
   onClose,
   onAddTask,
   onToggleTask,
@@ -55,23 +61,39 @@ export function DatePlannerDrawer({
   const displaySignal = signal ?? baseSignal
 
   return (
-    <aside className="drawer glass-panel" aria-label="Date planner drawer">
+    <aside className={`drawer glass-panel ${isOpen ? 'expanded' : 'collapsed'}`} aria-label="日期规划面板">
       <div className="drawer-header">
-        <div>
-          <p className="eyebrow">Date planner</p>
-          <h2>{formatLongDate(dateKey)}</h2>
-          <div className="badge-row">
-            {displaySignal.holidayName ? <span className="badge warm">{displaySignal.holidayName}</span> : null}
-            {displaySignal.solarTerm ? <span className="badge green">{displaySignal.solarTerm}</span> : null}
-            {displaySignal.lunarFestival ? <span className="badge blue">{displaySignal.lunarFestival}</span> : null}
-            {ritualCount > 0 ? <span className="badge neutral">{ritualCount} rituals done</span> : null}
+        <div className="panel-title">
+          <span className="panel-icon-chip note">
+            <NoteIcon width={16} height={16} />
+          </span>
+          <div>
+            <p className="eyebrow">Date agenda</p>
+            <h2>{isOpen ? formatLongDate(dateKey) : '选中日期后展开议程'}</h2>
+            {isOpen ? (
+              <div className="badge-row">
+                {displaySignal.holidayName ? <span className="badge warm">{displaySignal.holidayName}</span> : null}
+                {displaySignal.solarTerm ? <span className="badge green">{displaySignal.solarTerm}</span> : null}
+                {displaySignal.lunarFestival ? <span className="badge blue">{displaySignal.lunarFestival}</span> : null}
+                {ritualCount > 0 ? <span className="badge neutral">已完成 {ritualCount} 项节律</span> : null}
+              </div>
+            ) : null}
           </div>
         </div>
-        <button className="icon-button" type="button" onClick={onClose} aria-label="Close date drawer">
+        <button className="icon-button" type="button" onClick={onClose} aria-label="收起日期议程">
           <CloseIcon width={18} height={18} />
         </button>
       </div>
 
+      {!isOpen ? (
+        <div className="drawer-empty-state">
+          <p>点击月历中的任意日期，这里会展开当天任务、事件和日期短记。</p>
+          <span>今天会保留独立标记，方便区分“今天”与“当前选中的日期”。</span>
+        </div>
+      ) : null}
+
+      {isOpen ? (
+        <>
       <form
         className="inline-composer glass-ridge"
         onSubmit={(event) => {
@@ -87,23 +109,23 @@ export function DatePlannerDrawer({
           value={inputValue}
           onChange={(event) => setInputValue(event.target.value)}
           placeholder="为这一天写下一条具体计划"
-          aria-label="Add date task"
+          aria-label="新增日期任务"
         />
-        <button className="primary-button tertiary" type="submit" aria-label="Add date task">
+        <button className="primary-button tertiary" type="submit" aria-label="新增日期任务">
           <PlusIcon width={18} height={18} />
         </button>
       </form>
 
       <div className="drawer-section">
         <div className="subheading">
-          <span>Tasks</span>
+          <span>当天任务</span>
           <strong>{plan.tasks.length}</strong>
         </div>
         <div className="date-task-list">
           {plan.tasks.length === 0 ? <div className="empty-card">这一天还没有写下具体安排。</div> : null}
           {plan.tasks.map((task) => (
             <article key={task.id} className={`task-card date ${task.completed ? 'completed' : ''}`}>
-              <button className="check-button" type="button" onClick={() => onToggleTask(task.id)} aria-label="Toggle date task">
+              <button className="check-button" type="button" onClick={() => onToggleTask(task.id)} aria-label="切换日期任务完成状态">
                 {task.completed ? <CheckIcon width={16} height={16} /> : null}
               </button>
               <div
@@ -136,11 +158,11 @@ export function DatePlannerDrawer({
                 ) : (
                   <>
                     <p>{task.text}</p>
-                    <span>{task.completed ? '已完成' : '双击可以编辑'}</span>
+                    <span>{task.completed ? '已完成' : '双击可编辑'}</span>
                   </>
                 )}
               </div>
-              <button className="ghost-button danger" type="button" onClick={() => onDeleteTask(task.id)} aria-label="Delete date task">
+              <button className="ghost-button danger" type="button" onClick={() => onDeleteTask(task.id)} aria-label="删除日期任务">
                 <TrashIcon width={16} height={16} />
               </button>
             </article>
@@ -150,7 +172,7 @@ export function DatePlannerDrawer({
 
       <div className="drawer-section">
         <div className="subheading">
-          <span>Events on this date</span>
+          <span>当天事件</span>
           <strong>{events.length}</strong>
         </div>
         <div className="event-inline-list">
@@ -158,7 +180,7 @@ export function DatePlannerDrawer({
           {events.map((event) => (
             <div key={event.id} className="inline-pill">
               <span>{event.title}</span>
-              <small>{event.type}</small>
+              <small>{getEventTypeLabel(event.type)}</small>
             </div>
           ))}
         </div>
@@ -166,7 +188,7 @@ export function DatePlannerDrawer({
 
       <div className="drawer-section grow">
         <div className="subheading">
-          <span>Quick note</span>
+          <span>日期短记</span>
           <strong>{plan.note.length}/180</strong>
         </div>
         <textarea
@@ -177,6 +199,8 @@ export function DatePlannerDrawer({
           placeholder="记录这一天的提醒、重点或想保留的氛围。"
         />
       </div>
+        </>
+      ) : null}
     </aside>
   )
 }

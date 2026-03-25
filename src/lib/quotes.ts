@@ -3,7 +3,7 @@ import type { Quote } from '../store/appData'
 export const BUILTIN_QUOTES: Quote[] = [
   {
     id: 'quote_marcus',
-    text: '把注意力放回你能决定的部分，秩序会重新出现。',
+    text: '把注意力收回到你能决定的部分，秩序会重新出现。',
     author: 'Marcus Aurelius',
     enabled: true,
     source: 'builtin',

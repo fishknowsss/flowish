@@ -1,4 +1,5 @@
 import type { Task, TaskBucket } from '../store/appData'
+import { FocusIcon } from './Icon'
 import { TaskList } from './TaskList'
 
 interface FocusPanelProps {
@@ -14,11 +15,12 @@ export function FocusPanel(props: FocusPanelProps) {
   return (
     <TaskList
       title="今日重点"
-      eyebrow="Daily priorities"
+      eyebrow="Today focus"
+      titleIcon={<FocusIcon width={16} height={16} />}
       bucket="focus"
       tasks={props.tasks}
       accent="focus"
-      emptyState="把今天真正重要的事项放进这里。"
+      emptyState="把今天最值得推进的事情放进这里，只保留真正要完成的几项。"
       inputPlaceholder="写下今天必须完成的一件事"
       onAdd={props.onAdd}
       onToggle={props.onToggle}

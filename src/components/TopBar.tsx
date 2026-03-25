@@ -1,16 +1,18 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { formatTopbarDate } from '../lib/date'
 import type { Preferences } from '../store/appData'
 import {
   DownloadIcon,
   InstallIcon,
+  SearchIcon,
   SettingsIcon,
   SparkIcon,
   ThemeIcon,
   UploadIcon,
   VolumeIcon,
 } from './Icon'
+import { PomodoroTimer } from './PomodoroTimer'
 import { QuoteBar } from './QuoteBar'
 
 interface TopBarProps {
@@ -29,6 +31,11 @@ interface TopBarProps {
   onExport: () => void
   onImport: () => void
   onInstall: () => void
+  onOpenSearch: () => void
+}
+
+function getThemeLabel(theme: Preferences['theme']) {
+  return theme === 'pearl' ? '珍珠' : theme === 'mist' ? '雾面' : '黑曜石'
 }
 
 export function TopBar({
@@ -47,8 +54,31 @@ export function TopBar({
   onExport,
   onImport,
   onInstall,
+  onOpenSearch,
 }: TopBarProps) {
   const [showSettings, setShowSettings] = useState(false)
+  const settingsRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (!showSettings) return
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!settingsRef.current?.contains(event.target as Node)) {
+        setShowSettings(false)
+      }
+    }
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setShowSettings(false)
+    }
+
+    window.addEventListener('pointerdown', handlePointerDown)
+    window.addEventListener('keydown', handleEscape)
+    return () => {
+      window.removeEventListener('pointerdown', handlePointerDown)
+      window.removeEventListener('keydown', handleEscape)
+    }
+  }, [showSettings])
 
   return (
     <header className="topbar glass-panel">
@@ -57,8 +87,7 @@ export function TopBar({
           <SparkIcon width={18} height={18} />
         </div>
         <div>
-          <p className="eyebrow">Liquid Dashboard Pro</p>
-          <h1>1.0 Web</h1>
+          <h1>Liquid Dashboard Pro</h1>
           <p className="topbar-date">{formatTopbarDate(todayKey)}</p>
         </div>
       </div>
@@ -71,50 +100,76 @@ export function TopBar({
       />
 
       <div className="toolbar">
-        <button className="icon-button" type="button" onClick={onToggleSound} aria-label="Toggle sound">
+        <PomodoroTimer
+          defaultMinutes={preferences.pomodoroMinutes}
+          soundEnabled={preferences.soundEnabled}
+        />
+        <button
+          className="icon-button"
+          type="button"
+          onClick={onOpenSearch}
+          aria-label="搜索"
+          title="搜索 (Ctrl+K)"
+        >
+          <SearchIcon width={18} height={18} />
+        </button>
+        <button
+          className="icon-button"
+          type="button"
+          onClick={onToggleSound}
+          aria-label={preferences.soundEnabled ? '关闭音效' : '开启音效'}
+          title={preferences.soundEnabled ? '关闭音效' : '开启音效'}
+        >
           <VolumeIcon width={18} height={18} muted={!preferences.soundEnabled} />
         </button>
-        <button className="icon-button" type="button" onClick={onToggleTheme} aria-label="Toggle theme">
+        <button
+          className="icon-button"
+          type="button"
+          onClick={onToggleTheme}
+          aria-label={`切换主题，当前为${getThemeLabel(preferences.theme)}`}
+          title={`切换主题，当前为${getThemeLabel(preferences.theme)}`}
+        >
           <ThemeIcon width={18} height={18} />
         </button>
-        <button className="icon-button" type="button" onClick={onExport} aria-label="Export data">
+        <button className="icon-button" type="button" onClick={onExport} aria-label="导出数据" title="导出数据">
           <DownloadIcon width={18} height={18} />
         </button>
-        <button className="icon-button" type="button" onClick={onImport} aria-label="Import data">
+        <button className="icon-button" type="button" onClick={onImport} aria-label="导入数据" title="导入数据">
           <UploadIcon width={18} height={18} />
         </button>
         {installAvailable ? (
-          <button className="icon-button" type="button" onClick={onInstall} aria-label="Install app">
+          <button className="icon-button" type="button" onClick={onInstall} aria-label="安装应用" title="安装应用">
             <InstallIcon width={18} height={18} />
           </button>
         ) : null}
-        <div className="settings-wrap">
+        <div ref={settingsRef} className="settings-wrap">
           <button
             className="icon-button"
             type="button"
             onClick={() => setShowSettings((value) => !value)}
-            aria-label="Open preferences"
+            aria-label="打开偏好设置"
             aria-expanded={showSettings}
+            title="偏好设置"
           >
             <SettingsIcon width={18} height={18} />
           </button>
           {showSettings ? (
             <div className="settings-popover glass-panel">
               <button className="toggle-row" type="button" onClick={onToggleTheme}>
-                <span>Theme</span>
-                <strong>{preferences.theme === 'pearl' ? 'Pearl' : 'Mist'}</strong>
+                <span>主题材质</span>
+                <strong>{getThemeLabel(preferences.theme)}</strong>
               </button>
               <button className="toggle-row" type="button" onClick={onToggleMotion}>
-                <span>Motion</span>
-                <strong>{preferences.reducedMotion ? 'Reduce' : 'Spring'}</strong>
+                <span>动效节奏</span>
+                <strong>{preferences.reducedMotion ? '简化' : '标准'}</strong>
               </button>
               <button className="toggle-row" type="button" onClick={onToggleQuoteMode}>
-                <span>Quote mode</span>
-                <strong>{preferences.quoteMode === 'daily' ? 'Daily' : 'Random'}</strong>
+                <span>短句模式</span>
+                <strong>{preferences.quoteMode === 'daily' ? '每日一句' : '随机切换'}</strong>
               </button>
               <button className="toggle-row" type="button" onClick={onToggleCalendarDefault}>
-                <span>Calendar stage on load</span>
-                <strong>{preferences.calendarExpandedDefault ? 'On' : 'Off'}</strong>
+                <span>启动即展开月历</span>
+                <strong>{preferences.calendarExpandedDefault ? '开启' : '关闭'}</strong>
               </button>
             </div>
           ) : null}

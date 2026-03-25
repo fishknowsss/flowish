@@ -13,8 +13,8 @@ import {
   type Task,
   type ThemeMode,
 } from '../store/appData'
-import { BUILTIN_QUOTES } from './quotes'
 import { getTodayKey } from './date'
+import { BUILTIN_QUOTES } from './quotes'
 
 type UnknownRecord = Record<string, unknown>
 
@@ -40,7 +40,10 @@ function mapLegacyTasks(raw: unknown, bucket: Task['bucket']): Task[] {
     .map((item) => {
       const text = typeof item.text === 'string' ? item.text.trim() : ''
       if (!text) return null
-      const task = createTask(text, bucket)
+      const priority = ['p1', 'p2', 'p3'].includes(item.priority as string)
+        ? (item.priority as Task['priority'])
+        : null
+      const task = createTask(text, bucket, priority)
       return {
         ...task,
         completed: Boolean(item.completed),
@@ -63,7 +66,8 @@ function mapLegacyEvents(raw: unknown): EventItem[] {
             : ''
       const date = typeof item.date === 'string' ? item.date : ''
       if (!title || !date) return null
-      return createEvent(title, date, 'countdown')
+      const type = item.type === 'custom' ? 'custom' : 'countdown'
+      return createEvent(title, date, type)
     })
     .filter((item): item is EventItem => item !== null)
 }
@@ -143,7 +147,9 @@ function sanitizeAppData(raw: unknown, reducedMotion: boolean): AppData {
   const preferences = isObject(raw.preferences)
     ? {
         soundEnabled: Boolean(raw.preferences.soundEnabled),
-        theme: (raw.preferences.theme === 'mist' ? 'mist' : 'pearl') as ThemeMode,
+        theme: (['pearl', 'mist', 'obsidian'].includes(raw.preferences.theme as string)
+          ? raw.preferences.theme
+          : 'pearl') as ThemeMode,
         reducedMotion:
           typeof raw.preferences.reducedMotion === 'boolean'
             ? raw.preferences.reducedMotion
@@ -155,6 +161,10 @@ function sanitizeAppData(raw: unknown, reducedMotion: boolean): AppData {
           typeof raw.preferences.lastActiveDate === 'string'
             ? raw.preferences.lastActiveDate
             : todayKey,
+        pomodoroMinutes:
+          typeof raw.preferences.pomodoroMinutes === 'number'
+            ? raw.preferences.pomodoroMinutes
+            : 25,
       }
     : fallback.preferences
 
@@ -201,9 +211,11 @@ function fromLegacyLocalStorage(reducedMotion: boolean): AppData | null {
 
   return {
     ...defaultAppData(todayKey, reducedMotion),
-    focusTasks: focusTasks.length > 0 ? focusTasks : [createTask('安排今天最重要的一件事', 'focus')],
-    backlogTasks: backlogTasks.length > 0 ? backlogTasks : [createTask('把旧事项移入这里继续整理', 'backlog')],
-    rituals: rituals.length > 0 ? rituals : [createRitual('保留一条固定日常节奏')],
+    focusTasks:
+      focusTasks.length > 0 ? focusTasks : [createTask('安排今天最重要的一件事', 'focus')],
+    backlogTasks:
+      backlogTasks.length > 0 ? backlogTasks : [createTask('把旧事项移入这里继续整理', 'backlog')],
+    rituals: rituals.length > 0 ? rituals : [createRitual('保留一条固定日常节律')],
     events,
   }
 }

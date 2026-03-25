@@ -4,10 +4,11 @@ import { BacklogPanel } from './components/BacklogPanel'
 import { CalendarStage } from './components/CalendarStage'
 import { CalendarWidget } from './components/CalendarWidget'
 import { CountdownPanel } from './components/CountdownPanel'
-import { DatePlannerDrawer } from './components/DatePlannerDrawer'
 import { FocusPanel } from './components/FocusPanel'
 import { CheckIcon, CloseIcon, PlusIcon, TrashIcon } from './components/Icon'
+import { OverviewStrip } from './components/OverviewStrip'
 import { RitualsPanel } from './components/RitualsPanel'
+import { SearchOverlay } from './components/SearchOverlay'
 import { TopBar } from './components/TopBar'
 import { addMonths, getDailySeed, getTodayKey, parseDateKey, startOfMonth } from './lib/date'
 import { getEventsForDate } from './lib/holidays'
@@ -23,7 +24,10 @@ import {
   type Quote,
   type Task,
   type TaskBucket,
+  type ThemeMode,
 } from './store/appData'
+
+const THEME_CYCLE: ThemeMode[] = ['pearl', 'mist', 'obsidian']
 
 function playFeedbackSound(type: 'add' | 'complete' | 'delete' | 'surface', enabled: boolean) {
   if (!enabled) return
@@ -66,26 +70,6 @@ function setTaskList(appData: AppData, bucket: Exclude<TaskBucket, 'date'>, next
     : { ...appData, backlogTasks: nextList }
 }
 
-function upsertDatePlan(
-  appData: AppData,
-  dateKey: string,
-  updater: (plan: DatePlan) => DatePlan,
-): AppData {
-  const currentPlan = appData.datePlans[dateKey] ?? {
-    date: dateKey,
-    tasks: [],
-    note: '',
-  }
-
-  return {
-    ...appData,
-    datePlans: {
-      ...appData.datePlans,
-      [dateKey]: updater(currentPlan),
-    },
-  }
-}
-
 function QuoteManager({
   quotes,
   onClose,
@@ -113,9 +97,9 @@ function QuoteManager({
         <div className="drawer-header">
           <div>
             <p className="eyebrow">Quote library</p>
-            <h2>Manage your lines</h2>
+            <h2>管理短句库</h2>
           </div>
-          <button className="icon-button" type="button" onClick={onClose} aria-label="Close quote library">
+          <button className="icon-button" type="button" onClick={onClose} aria-label="关闭短句库">
             <CloseIcon width={18} height={18} />
           </button>
         </div>
@@ -136,16 +120,16 @@ function QuoteManager({
             className="note-field compact"
             value={text}
             onChange={(event) => setText(event.target.value)}
-            placeholder="Write a line you want to see in the top bar"
+            placeholder="写下一句你想在顶栏看到的话"
           />
           <div className="quote-form-row">
             <input
               className="field"
               value={author}
               onChange={(event) => setAuthor(event.target.value)}
-              placeholder="Author or source"
+              placeholder="作者或出处"
             />
-            <button className="primary-button" type="submit" aria-label="Add quote">
+            <button className="primary-button" type="submit" aria-label="新增短句">
               <PlusIcon width={18} height={18} />
             </button>
           </div>
@@ -156,9 +140,7 @@ function QuoteManager({
             <article key={quote.id} className="quote-item glass-ridge">
               <div>
                 <p>{quote.text}</p>
-                <span>
-                  {quote.author} · {quote.source}
-                </span>
+                <span>{quote.author} · {quote.source === 'custom' ? '自定义' : '内置'}</span>
               </div>
               <div className="quote-item-actions">
                 <button
@@ -169,14 +151,19 @@ function QuoteManager({
                   {quote.enabled ? (
                     <>
                       <CheckIcon width={14} height={14} />
-                      Enabled
+                      已启用
                     </>
                   ) : (
-                    'Disabled'
+                    '已停用'
                   )}
                 </button>
                 {quote.source === 'custom' ? (
-                  <button className="ghost-button danger" type="button" onClick={() => onDeleteQuote(quote.id)}>
+                  <button
+                    className="ghost-button danger"
+                    type="button"
+                    onClick={() => onDeleteQuote(quote.id)}
+                    aria-label="删除短句"
+                  >
                     <TrashIcon width={16} height={16} />
                   </button>
                 ) : null}
@@ -196,8 +183,8 @@ function App() {
   const [selectedDate, setSelectedDate] = useState(todayKey)
   const [calendarMonth, setCalendarMonth] = useState(() => startOfMonth(parseDateKey(todayKey)))
   const [calendarStageOpen, setCalendarStageOpen] = useState(initialData.preferences.calendarExpandedDefault)
-  const [drawerOpen, setDrawerOpen] = useState(true)
   const [quoteManagerOpen, setQuoteManagerOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [quoteCursor, setQuoteCursor] = useState(0)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
@@ -218,6 +205,36 @@ function App() {
     document.documentElement.dataset.theme = appData.preferences.theme
     document.documentElement.dataset.motion = appData.preferences.reducedMotion ? 'reduce' : 'default'
   }, [appData])
+
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const isMetaOrCtrl = event.metaKey || event.ctrlKey
+
+      if (isMetaOrCtrl && event.key === 'k') {
+        event.preventDefault()
+        setSearchOpen(true)
+      }
+
+      if (event.key === 'Escape') {
+        if (searchOpen) {
+          setSearchOpen(false)
+          return
+        }
+        if (quoteManagerOpen) {
+          setQuoteManagerOpen(false)
+          return
+        }
+        if (calendarStageOpen) {
+          setCalendarStageOpen(false)
+          return
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [searchOpen, quoteManagerOpen, calendarStageOpen])
 
   const enabledQuotes = useMemo(() => getEnabledQuotes(appData.quotes), [appData.quotes])
   const activeQuote = enabledQuotes[quoteCursor % enabledQuotes.length] ?? enabledQuotes[0]
@@ -283,12 +300,24 @@ function App() {
     })
   }
 
+  const cycleTheme = () => {
+    setAppData((prev) => {
+      const currentIndex = THEME_CYCLE.indexOf(prev.preferences.theme)
+      const nextTheme = THEME_CYCLE[(currentIndex + 1) % THEME_CYCLE.length]
+      return {
+        ...prev,
+        preferences: { ...prev.preferences, theme: nextTheme },
+      }
+    })
+  }
+
   return (
     <div className="app-shell">
       <div className="ambient-backdrop" aria-hidden="true">
         <span className="orb orb-a" />
         <span className="orb orb-b" />
         <span className="orb orb-c" />
+        <span className="orb orb-d" />
       </div>
 
       <input
@@ -323,15 +352,7 @@ function App() {
             preferences: { ...prev.preferences, soundEnabled: !prev.preferences.soundEnabled },
           }))
         }}
-        onToggleTheme={() =>
-          setAppData((prev) => ({
-            ...prev,
-            preferences: {
-              ...prev.preferences,
-              theme: prev.preferences.theme === 'pearl' ? 'mist' : 'pearl',
-            },
-          }))
-        }
+        onToggleTheme={cycleTheme}
         onToggleMotion={() =>
           setAppData((prev) => ({
             ...prev,
@@ -366,10 +387,21 @@ function App() {
           await installPrompt.prompt()
           setInstallPrompt(null)
         }}
+        onOpenSearch={() => setSearchOpen(true)}
       />
 
       <main className="dashboard-grid">
         <section className="primary-column">
+          <OverviewStrip
+            todayKey={todayKey}
+            selectedDate={selectedDate}
+            focusTasks={appData.focusTasks}
+            backlogTasks={appData.backlogTasks}
+            rituals={appData.rituals}
+            selectedPlan={selectedPlan}
+            events={selectedEvents}
+          />
+
           <FocusPanel
             tasks={appData.focusTasks}
             onAdd={(text) => {
@@ -483,13 +515,13 @@ function App() {
         <aside className="side-column">
           <CalendarWidget
             appData={appData}
+            todayKey={todayKey}
             selectedDate={selectedDate}
             viewDate={calendarMonth}
             onPrevMonth={() => setCalendarMonth((prev) => addMonths(prev, -1))}
             onNextMonth={() => setCalendarMonth((prev) => addMonths(prev, 1))}
             onSelectDate={(dateKey) => {
               setSelectedDate(dateKey)
-              setDrawerOpen(true)
               setCalendarMonth(startOfMonth(parseDateKey(dateKey)))
             }}
             onOpenStage={() => {
@@ -518,66 +550,10 @@ function App() {
         </aside>
       </main>
 
-      {drawerOpen ? (
-        <DatePlannerDrawer
-          dateKey={selectedDate}
-          plan={selectedPlan}
-          appData={appData}
-          events={selectedEvents}
-          onClose={() => setDrawerOpen(false)}
-          onAddTask={(text) => {
-            playFeedbackSound('add', appData.preferences.soundEnabled)
-            setAppData((prev) =>
-              upsertDatePlan(prev, selectedDate, (plan) => ({
-                ...plan,
-                tasks: [createTask(text, 'date'), ...plan.tasks],
-              })),
-            )
-          }}
-          onToggleTask={(taskId) =>
-            setAppData((prev) =>
-              upsertDatePlan(prev, selectedDate, (plan) => ({
-                ...plan,
-                tasks: plan.tasks.map((task) =>
-                  task.id === taskId
-                    ? { ...task, completed: !task.completed, updatedAt: new Date().toISOString() }
-                    : task,
-                ),
-              })),
-            )
-          }
-          onDeleteTask={(taskId) =>
-            setAppData((prev) =>
-              upsertDatePlan(prev, selectedDate, (plan) => ({
-                ...plan,
-                tasks: plan.tasks.filter((task) => task.id !== taskId),
-              })),
-            )
-          }
-          onUpdateTask={(taskId, text) =>
-            setAppData((prev) =>
-              upsertDatePlan(prev, selectedDate, (plan) => ({
-                ...plan,
-                tasks: plan.tasks.map((task) =>
-                  task.id === taskId ? { ...task, text, updatedAt: new Date().toISOString() } : task,
-                ),
-              })),
-            )
-          }
-          onNoteChange={(note) =>
-            setAppData((prev) =>
-              upsertDatePlan(prev, selectedDate, (plan) => ({
-                ...plan,
-                note,
-              })),
-            )
-          }
-        />
-      ) : null}
-
       {calendarStageOpen ? (
         <CalendarStage
           appData={appData}
+          todayKey={todayKey}
           selectedDate={selectedDate}
           viewDate={calendarMonth}
           onClose={() => setCalendarStageOpen(false)}
@@ -585,7 +561,6 @@ function App() {
           onNextMonth={() => setCalendarMonth((prev) => addMonths(prev, 1))}
           onSelectDate={(dateKey) => {
             setSelectedDate(dateKey)
-            setDrawerOpen(true)
             setCalendarMonth(startOfMonth(parseDateKey(dateKey)))
           }}
         />
@@ -624,6 +599,13 @@ function App() {
               quotes: prev.quotes.filter((quote) => quote.id !== quoteId),
             }))
           }
+        />
+      ) : null}
+
+      {searchOpen ? (
+        <SearchOverlay
+          appData={appData}
+          onClose={() => setSearchOpen(false)}
         />
       ) : null}
     </div>
