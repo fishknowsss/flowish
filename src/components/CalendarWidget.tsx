@@ -156,31 +156,34 @@ export function CalendarWidget({
 
       {/* Inline Date Agenda Popup */}
       {variant === 'sidebar' && popupDate && popupSignal && popupPlan ? (
-        <div className="date-popup glass-ridge">
-          <div className="date-popup-header">
-            <strong>{formatShortDate(popupDate)}</strong>
-            <button className="icon-button compact" type="button" onClick={() => setPopupDate(null)} aria-label="关闭">
-              <CloseIcon width={14} height={14} />
-            </button>
+        <>
+          <div className="popup-overlay" onClick={() => setPopupDate(null)} />
+          <div className="date-popup glass-panel">
+            <div className="date-popup-header">
+              <strong>{formatShortDate(popupDate)}</strong>
+              <button className="icon-button compact" type="button" onClick={() => setPopupDate(null)} aria-label="关闭">
+                <CloseIcon width={14} height={14} />
+              </button>
+            </div>
+            <div className="date-popup-body">
+              {popupSignal.solarTerm ? <span className="badge neutral">{popupSignal.solarTerm}</span> : null}
+              {popupSignal.holidayName ? <span className="badge warm">{popupSignal.holidayName}</span> : null}
+              {popupSignal.lunarFestival ? <span className="badge green">{popupSignal.lunarFestival}</span> : null}
+              {popupPlan.tasks.length > 0 ? (
+                <div className="date-popup-tasks">
+                  {popupPlan.tasks.map((task) => (
+                    <div key={task.id} className="date-popup-task-item">
+                      <span className={task.completed ? 'completed' : ''}>{task.text}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+              {!popupSignal.solarTerm && !popupSignal.holidayName && !popupSignal.lunarFestival && popupPlan.tasks.length === 0 ? (
+                <span className="date-popup-empty">暂无节气、节假日或安排</span>
+              ) : null}
+            </div>
           </div>
-          <div className="date-popup-body">
-            {popupSignal.solarTerm ? <span className="badge neutral">{popupSignal.solarTerm}</span> : null}
-            {popupSignal.holidayName ? <span className="badge warm">{popupSignal.holidayName}</span> : null}
-            {popupSignal.lunarFestival ? <span className="badge green">{popupSignal.lunarFestival}</span> : null}
-            {popupPlan.tasks.length > 0 ? (
-              <div className="date-popup-tasks">
-                {popupPlan.tasks.map((task) => (
-                  <div key={task.id} className="date-popup-task-item">
-                    <span className={task.completed ? 'completed' : ''}>{task.text}</span>
-                  </div>
-                ))}
-              </div>
-            ) : null}
-            {!popupSignal.solarTerm && !popupSignal.holidayName && !popupSignal.lunarFestival && popupPlan.tasks.length === 0 ? (
-              <span className="date-popup-empty">暂无节气、节假日或安排</span>
-            ) : null}
-          </div>
-        </div>
+        </>
       ) : null}
     </section>
   )

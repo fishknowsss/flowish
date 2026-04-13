@@ -151,7 +151,7 @@ button {
 .glass-ridge,
 .solid-panel {
   position: relative;
-  border: 1px solid var(--border-soft);
+  border: 1px solid var(--border-strong);
   box-shadow: var(--shadow-lg), var(--shadow-glow);
   transition: box-shadow 280ms var(--easing-fluid);
 }
@@ -176,7 +176,7 @@ button {
 .glass-panel {
   background: var(--bg-glass);
   backdrop-filter: blur(24px) saturate(150%);
-  box-shadow: var(--shadow-lg), var(--shadow-glow), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  box-shadow: var(--shadow-lg), var(--shadow-glow), inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 :root[data-theme='obsidian'] .glass-panel {
@@ -386,24 +386,25 @@ button {
 /* ─── Dashboard Grid ─── */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(300px, 0.72fr);
-  gap: 16px;
-  height: calc(100dvh - 48px - var(--topbar-height) - 18px);
-  padding-top: 18px;
+  grid-template-columns: minmax(0, 1.6fr) minmax(300px, 0.6fr);
+  gap: var(--main-gutter);
+  height: calc(100dvh - (var(--dashboard-gap) * 2) - var(--topbar-height) - 10px);
+  padding-top: 10px;
   min-height: 0;
 }
+
 
 .primary-column,
 .side-column {
   display: grid;
-  gap: 16px;
+  gap: var(--dashboard-gap);
   align-content: start;
   min-height: 0;
 }
 
 .primary-column {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  grid-template-rows: auto minmax(0, 1.2fr) minmax(180px, 0.52fr);
+  grid-template-rows: auto minmax(0, 1.15fr) minmax(0, 0.75fr);
 }
 
 .primary-column > :nth-child(1) {
@@ -446,24 +447,137 @@ button {
 /* ─── Panels ─── */
 .panel {
   border-radius: var(--radius-xl);
-  padding: 16px;
+  padding: 14px;
   min-height: 0;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Side Header Layout ─── */
+.panel-side-layout {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 16px;
+  align-items: stretch;
+  flex: 1;
+}
+
+.panel-side-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 14px;
+  border-right: 1px solid var(--border-strong);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.04), transparent);
+  flex-shrink: 0;
+  min-width: 56px;
+}
+
+:root[data-theme='obsidian'] .panel-side-header {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent);
+}
+
+.panel-side-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.side-cleanup-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  color: var(--text-muted);
+  opacity: 0.5;
+  transition: all 200ms var(--easing-fluid);
+  cursor: pointer;
+  margin-top: auto;
+}
+
+.side-cleanup-btn:hover {
+  opacity: 1;
+  color: var(--danger);
+  background: rgba(255, 0, 0, 0.08);
+}
+
+.panel-title-vertical {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--text-primary);
+}
+
+.panel-title-vertical h2 {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.panel-title-vertical .eyebrow {
+  margin: 0;
+  font-size: 10px;
+  white-space: nowrap;
+  opacity: 0.6;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.panel-side-meta {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.panel-side-meta strong {
+  font-size: 14px;
+  font-family: var(--font-display);
+  color: var(--accent-focus);
+}
+
+.panel-side-meta span {
+  font-size: 9px;
+  color: var(--text-muted);
+  writing-mode: vertical-rl;
+  white-space: nowrap;
+}
+
+.panel-content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
 }
 
 /* ─── Overview Grid ─── */
 .overview-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  display: flex;
   gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 6px;
 }
 
 .overview-card {
-  display: grid;
-  gap: 8px;
-  min-height: 134px;
-  padding: 14px 16px;
-  border-radius: 22px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  min-height: 78px;
+  padding: 10px 14px;
+  border-radius: 20px;
   position: relative;
   overflow: hidden;
   transition: transform 240ms var(--easing-fluid), box-shadow 240ms var(--easing-fluid);
@@ -479,8 +593,8 @@ button {
   content: '';
   position: absolute;
   left: 0;
-  top: 10%;
-  bottom: 10%;
+  top: 15%;
+  bottom: 15%;
   width: 3px;
   border-radius: 0 3px 3px 0;
   background: linear-gradient(180deg, var(--accent-focus), color-mix(in srgb, var(--accent-focus) 40%, transparent));
@@ -508,15 +622,15 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  margin-bottom: 2px;
 }
 
 .overview-kicker {
-  padding: 6px 10px;
+  padding: 3px 8px;
   border-radius: 999px;
   background: rgba(255, 239, 229, 0.92);
   color: var(--accent-focus);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.04em;
 }
@@ -554,32 +668,37 @@ button {
 
 .overview-number {
   font-family: var(--font-display);
-  font-size: clamp(1.6rem, 3vw, 2.2rem);
-  line-height: 0.92;
-  letter-spacing: -0.05em;
+  font-size: 1.5rem;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  margin: 1px 0;
 }
 
 .overview-title {
   margin: 0;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
-  line-height: 1.32;
+  line-height: 1.2;
 }
 
 .overview-copy {
   margin: 0;
-  font-size: 12px;
-  line-height: 1.48;
+  font-size: 11px;
+  line-height: 1.3;
   color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* ─── Progress Bar ─── */
 .progress-track {
   overflow: hidden;
-  height: 10px;
+  height: 6px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.66);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.84);
+  margin: 4px 0;
 }
 
 :root[data-theme='obsidian'] .progress-track {
@@ -832,23 +951,88 @@ button {
   color: var(--accent-ritual);
 }
 
+/* ─── Interaction Feedback ─── */
 .icon-button:hover,
 .primary-button:hover,
 .ghost-button:hover,
 .chip-toggle:hover,
 .task-card:hover,
-.ritual-card:hover,
-.countdown-card:hover,
-.calendar-day:hover,
-.inline-pill:hover {
-  transform: translateY(-1px);
+.ritual-chip:hover,
+.milestone-card:hover,
+.calendar-day:hover {
+  transform: translateY(-1.5px);
+  box-shadow: var(--shadow-md);
 }
 
 .icon-button:active,
 .primary-button:active,
 .ghost-button:active,
 .chip-toggle:active {
-  transform: translateY(0) scale(0.98);
+  transform: translateY(0) scale(0.96);
+  transition: transform 100ms;
+}
+
+/* ─── Empty States ─── */
+.empty-card-visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  gap: 16px;
+  color: var(--text-muted);
+  text-align: center;
+  opacity: 0.8;
+}
+
+.empty-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 18px;
+  background: var(--bg-panel);
+  display: grid;
+  place-items: center;
+  color: var(--text-muted);
+  box-shadow: var(--shadow-sm);
+  opacity: 0.6;
+}
+
+.empty-card-visual p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  max-width: 200px;
+}
+
+/* ─── Popups ─── */
+.popup-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 15;
+  background: transparent;
+}
+
+.date-popup {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  margin-top: 8px;
+  padding: 14px;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+  animation: fade-scale-in 200ms var(--easing-spring);
+}
+
+/* ─── Animations ─── */
+@keyframes pomodoro-done {
+  0%, 100% { background: rgba(255, 255, 255, 0.42); }
+  50% { background: color-mix(in srgb, var(--accent-focus) 20%, white); box-shadow: 0 0 20px var(--accent-focus); }
+}
+
+.pomodoro-widget.done-flash {
+  animation: pomodoro-done 1s var(--easing-fluid) infinite;
 }
 
 /* ─── Lists ─── */
@@ -866,7 +1050,8 @@ button {
 .quote-list,
 .date-task-list,
 .event-inline-list,
-.ritual-grid {
+.ritual-chip-grid,
+.milestone-grid {
   min-height: 0;
   overflow: auto;
   padding-right: 4px;
@@ -878,7 +1063,8 @@ button {
 .quote-list::-webkit-scrollbar,
 .date-task-list::-webkit-scrollbar,
 .event-inline-list::-webkit-scrollbar,
-.ritual-grid::-webkit-scrollbar {
+.ritual-chip-grid::-webkit-scrollbar,
+.milestone-grid::-webkit-scrollbar {
   width: 8px;
 }
 
@@ -911,7 +1097,7 @@ button {
 .quote-item,
 .inline-pill {
   background: var(--bg-panel-strong);
-  border: 1px solid rgba(255, 255, 255, 0.76);
+  border: 1px solid var(--border-soft);
   box-shadow: var(--shadow-sm);
 }
 
@@ -1045,9 +1231,6 @@ button {
 
 .panel-footer {
   margin-top: 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }
 
 .panel-hint {
@@ -1058,9 +1241,9 @@ button {
 
 /* ─── Rituals (Chip Grid) ─── */
 .ritual-chip-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
   min-height: 0;
   overflow: auto;
   padding-right: 4px;
@@ -1096,33 +1279,67 @@ button {
 .ritual-chip {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  min-width: 140px;
-  max-width: 200px;
-  flex: 1 1 140px;
-  padding: 10px 12px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.68);
-  border: 1px solid rgba(255, 255, 255, 0.76);
+  gap: 8px;
+  min-width: 160px;
+  max-width: 260px;
+  flex: 1 1 160px;
+  padding: 16px;
+  border-radius: 20px;
+  background: var(--bg-panel-strong);
+  border: 1.5px solid var(--border-strong);
   box-shadow: var(--shadow-sm);
-  transition: transform 160ms var(--easing-fluid), box-shadow 160ms var(--easing-fluid);
+  cursor: grab;
+  transition: all 200ms var(--easing-fluid);
+}
+
+.ritual-chip:active {
+  cursor: grabbing;
+}
+
+.ritual-chip.dragging {
+  opacity: 0.4;
+  transform: scale(0.96);
+  border-style: dashed;
+}
+
+.ritual-chip.drag-over {
+  border-color: var(--accent-backlog);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-backlog) 20%, transparent);
 }
 
 :root[data-theme='obsidian'] .ritual-chip {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .ritual-chip:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .ritual-chip.done {
-  background: linear-gradient(145deg, rgba(229, 242, 232, 0.92), rgba(248, 253, 249, 0.84));
+  background: linear-gradient(145deg, rgba(229, 242, 232, 0.96), rgba(248, 253, 249, 0.9));
+  border-color: color-mix(in srgb, var(--accent-ritual) 30%, transparent);
 }
 
 :root[data-theme='obsidian'] .ritual-chip.done {
-  background: linear-gradient(145deg, rgba(122, 173, 138, 0.12), rgba(122, 173, 138, 0.05));
+  background: linear-gradient(145deg, rgba(122, 173, 138, 0.15), rgba(122, 173, 138, 0.08));
+}
+
+.ritual-check {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1.5px solid var(--border-strong);
+  color: var(--text-muted);
+}
+
+:root[data-theme='obsidian'] .ritual-check {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.ritual-check.checked {
+  background: var(--accent-ritual);
+  border-color: var(--accent-ritual);
+  color: white;
 }
 
 .ritual-chip-top {
@@ -1136,8 +1353,8 @@ button {
 }
 
 .ritual-chip-label {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
   line-height: 1.3;
   display: -webkit-box;
   -webkit-line-clamp: 2;

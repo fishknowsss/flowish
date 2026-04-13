@@ -509,6 +509,18 @@ function App() {
                 ),
               }))
             }
+            onDropRitual={(ritualId, targetId) => {
+              setAppData((prev) => {
+                const nextRituals = [...prev.rituals]
+                const sourceIndex = nextRituals.findIndex((r) => r.id === ritualId)
+                const targetIndex = nextRituals.findIndex((r) => r.id === targetId)
+                if (sourceIndex === -1 || targetIndex === -1) return prev
+
+                const [removed] = nextRituals.splice(sourceIndex, 1)
+                nextRituals.splice(targetIndex, 0, removed)
+                return { ...prev, rituals: nextRituals }
+              })
+            }}
           />
         </section>
 

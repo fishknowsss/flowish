@@ -83,12 +83,13 @@ function TaskRow({
       onDragStart={(event) => {
         event.dataTransfer.setData('text/plain', JSON.stringify({ bucket, taskId: task.id }))
         event.dataTransfer.effectAllowed = 'move'
-        setDragging(true)
+        // Create a custom drag image if needed, or rely on opacity
+        setTimeout(() => setDragging(true), 0)
       }}
       onDragEnd={() => setDragging(false)}
       onDragOver={(event) => {
         event.preventDefault()
-        setDragOver(true)
+        if (!dragging) setDragOver(true)
       }}
       onDragLeave={() => setDragOver(false)}
       onDrop={(event) => {
@@ -98,7 +99,9 @@ function TaskRow({
         if (!raw) return
 
         const payload = JSON.parse(raw) as { bucket: Exclude<TaskBucket, 'date'>; taskId: string }
-        onDropTask(payload.bucket, payload.taskId, task.id)
+        if (payload.taskId !== task.id) {
+          onDropTask(payload.bucket, payload.taskId, task.id)
+        }
       }}
     >
       <div className="task-leading">
@@ -111,7 +114,7 @@ function TaskRow({
         </button>
       </div>
 
-      <div className="task-copy">
+      <div className="task-copy" onDoubleClick={() => setEditing(true)}>
         {editing ? (
           <input
             autoFocus
@@ -177,66 +180,81 @@ export function TaskList({
 
   return (
     <section className={`panel solid-panel task-panel task-panel-${accent}`}>
-      <div className="panel-header">
-        <div className="panel-title">
-          {titleIcon ? <span className={`panel-icon-chip ${accent}`}>{titleIcon}</span> : null}
-          <div>
-          <p className="eyebrow">{eyebrow}</p>
-          <h2>{title}</h2>
+      <div className="panel-side-layout">
+        <aside className="panel-side-header">
+          <div className="panel-side-top">
+            <span className={`panel-icon-chip ${accent}`}>{titleIcon}</span>
+            <div className="panel-title-vertical">
+              <p className="eyebrow">{eyebrow}</p>
+              <h2>{title}</h2>
+            </div>
+            <div className="panel-side-meta">
+              <strong>{pendingCount}</strong>
+              <span>待处理</span>
+            </div>
+          </div>
+
+          {allowClearCompleted && onClearCompleted ? (
+            <button
+              className="side-cleanup-btn"
+              type="button"
+              onClick={onClearCompleted}
+              title="清理已完成"
+            >
+              <TrashIcon width={18} height={18} />
+            </button>
+          ) : null}
+        </aside>
+
+        <div className="panel-content">
+          <form className="inline-composer glass-ridge" onSubmit={handleSubmit}>
+            <input
+              className="field"
+              value={inputValue}
+              onChange={(event) => setInputValue(event.target.value)}
+              placeholder={inputPlaceholder}
+              aria-label={inputPlaceholder}
+            />
+            <button className="primary-button" type="submit" aria-label="新增任务">
+              <PlusIcon width={18} height={18} />
+            </button>
+          </form>
+
+          <div
+            className="task-list"
+            onDragOver={(event) => event.preventDefault()}
+            onDrop={(event) => {
+              event.preventDefault()
+              const raw = event.dataTransfer.getData('text/plain')
+              if (!raw) return
+              const payload = JSON.parse(raw) as { bucket: Exclude<TaskBucket, 'date'>; taskId: string }
+              onDropTask(payload.bucket, payload.taskId, null)
+            }}
+          >
+            {tasks.length === 0 ? (
+              <div className="empty-card-visual">
+                <div className="empty-icon-wrap">{titleIcon}</div>
+                <p>{emptyState}</p>
+              </div>
+            ) : null}
+            {tasks.map((task) => (
+              <TaskRow
+                key={task.id}
+                task={task}
+                accent={accent}
+                bucket={bucket}
+                onToggle={onToggle}
+                onDelete={onDelete}
+                onUpdate={onUpdate}
+                onDropTask={onDropTask}
+              />
+            ))}
+          </div>
+
+          <div className="panel-footer">
+            <span className="panel-hint">双击可编辑</span>
           </div>
         </div>
-        <div className="panel-meta">
-          <strong>{pendingCount}</strong>
-          <span>待处理</span>
-        </div>
-      </div>
-
-      <form className="inline-composer glass-ridge" onSubmit={handleSubmit}>
-        <input
-          className="field"
-          value={inputValue}
-          onChange={(event) => setInputValue(event.target.value)}
-          placeholder={inputPlaceholder}
-          aria-label={inputPlaceholder}
-        />
-        <button className="primary-button" type="submit" aria-label="新增任务">
-          <PlusIcon width={18} height={18} />
-        </button>
-      </form>
-
-      <div
-        className="task-list"
-        onDragOver={(event) => event.preventDefault()}
-        onDrop={(event) => {
-          event.preventDefault()
-          const raw = event.dataTransfer.getData('text/plain')
-          if (!raw) return
-          const payload = JSON.parse(raw) as { bucket: Exclude<TaskBucket, 'date'>; taskId: string }
-          onDropTask(payload.bucket, payload.taskId, null)
-        }}
-      >
-        {tasks.length === 0 ? <div className="empty-card">{emptyState}</div> : null}
-        {tasks.map((task) => (
-          <TaskRow
-            key={task.id}
-            task={task}
-            accent={accent}
-            bucket={bucket}
-            onToggle={onToggle}
-            onDelete={onDelete}
-            onUpdate={onUpdate}
-            onDropTask={onDropTask}
-          />
-        ))}
-      </div>
-
-      <div className="panel-footer">
-        <span className="panel-hint">双击可编辑</span>
-        {allowClearCompleted && onClearCompleted ? (
-          <button className="ghost-button" type="button" onClick={onClearCompleted}>
-            清理已完成
-          </button>
-        ) : null}
       </div>
     </section>
   )

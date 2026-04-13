@@ -18,6 +18,8 @@ export function PomodoroTimer({ defaultMinutes, soundEnabled }: PomodoroTimerPro
   const [state, setState] = useState<TimerState>('idle')
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
+  const [isDoneFlash, setIsDoneFlash] = useState(false)
+
   const clearTimer = useCallback(() => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current)
@@ -26,6 +28,9 @@ export function PomodoroTimer({ defaultMinutes, soundEnabled }: PomodoroTimerPro
   }, [])
 
   const playDoneSound = useCallback(() => {
+    setIsDoneFlash(true)
+    setTimeout(() => setIsDoneFlash(false), 2000)
+
     if (!soundEnabled) return
     const AudioContextCtor =
       window.AudioContext ??
@@ -92,7 +97,7 @@ export function PomodoroTimer({ defaultMinutes, soundEnabled }: PomodoroTimerPro
   const offset = CIRCUMFERENCE * (1 - progress)
 
   return (
-    <div className={`pomodoro-widget ${state === 'running' ? 'active' : ''}`}>
+    <div className={`pomodoro-widget ${state === 'running' ? 'active' : ''} ${isDoneFlash ? 'done-flash' : ''}`}>
       <div className="pomodoro-ring">
         <svg viewBox="0 0 28 28">
           <circle className="ring-bg" cx="14" cy="14" r="11" />

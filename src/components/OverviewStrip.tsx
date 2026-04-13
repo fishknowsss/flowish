@@ -24,7 +24,7 @@ function getSelectedDateSummary(selectedDate: string, todayKey: string, plan: Da
   if (note) {
     return {
       label,
-      headline: note.length > 42 ? `${note.slice(0, 42)}…` : note,
+      headline: note.length > 80 ? `${note.slice(0, 80)}…` : note,
       meta: `${plan.tasks.length} 项安排 · ${events.length} 个事件`,
     }
   }
