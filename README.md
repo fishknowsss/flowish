@@ -4,16 +4,16 @@ Flowish is a static React web app for daily focus planning, backlog management, 
 
 ## Open locally
 
-The simplest local option is to double-click [open-local-site.cmd](./open-local-site.cmd). It starts the local server and opens the site in your browser.
+The simplest local option is to double-click [open-local-site.command](./open-local-site.command) on macOS or [open-local-site.cmd](./open-local-site.cmd) on Windows. It finds an available local port, starts the Flowish dev server there, and opens the matching URL in your browser.
 
 If you prefer terminal commands:
 
 ```powershell
 npm install
-npm run dev -- --host 127.0.0.1 --port 4173
+npm run open:local
 ```
 
-Then open [http://127.0.0.1:4173/](http://127.0.0.1:4173/).
+If port `4173` is already used by another project, the script automatically switches to the next free port.
 
 ## Build and preview
 
